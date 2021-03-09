@@ -1,0 +1,122 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `brfss2013`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+* * *
+
+## Part 1: Data
+This data is provided by The Behavioral Risk Factor Surveillance System (BRFSS) project via https://www.coursera.org/learn/probability-intro/discussions/weeks/5
+This project has collected data nearly 500,000 U.S residents by telephone review in 2013.For this Topic we pick some variables that relate to what we interest and necessary for analyse to answer our research question only
+
+- sleptim1 : How Much Time Do You Sleep
+- exerany2: Exercise In Past 30 Days
+- genhlth: General Health
+- drnkany5: Drink Any Alcoholic Beverages In Past 30 Days
+
+Please note that this study is observation method that Generalize but impossible to be causal inferences from the data.
+
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1:**
+Is there any correlation between How Much Time Do You Sleep and General Health ?
+
+**Research quesion 2:**
+Is there any correlation between Exercise In Past 30 Days and General Health ?
+
+**Research quesion 3:**
+Is there any correlation between Avg Alcoholic Drinks Per Day In Past 30 Level and General Health ?
+
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
+button (green button with orange arrow) above. Make sure that your code is visible
+in the project you submit. Delete this note when before you submit your work.
+
+**Research quesion 1:**
+
+```{r}
+brfss2013_final <- brfss2013  %>% 
+	filter(!(is.na(sleptim1)) , !(is.na(genhlth)), !(is.na(exerany2)), !(is.na(drnkany5))) %>%
+	select(sleptim1, genhlth, exerany2, drnkany5)
+
+pj5 <- brfss2013_final %>%
+	group_by(sleptim1,genhlth) %>%
+	summarise(count=n()) %>%
+	mutate(perc=count/sum(count))
+
+ggplot(pj5, aes(x = factor(sleptim1), y = perc*100, fill = factor(genhlth))) +geom_bar(stat="identity", width = 0.7) +labs (x = "Sleep Time (hr)" , y = "Percentage" , title = "Sleep Time and Health Conditions")
+
+```
+Firstly,We generate and filter the data that will fit our research question then we prepare data that have to Visualize on the graph.
+As you can see from the graph peoples who sleep 7 hours a aday has highest percentage of better health condition (good,very good and excellent).
+more than 88% of peoples who sleep 7 hours a day (117,089/132,087) has at least good health conditions.
+
+**Research quesion 2:**
+
+```{r}
+pj52 <- brfss2013_final %>%
+	group_by(exerany2,genhlth) %>%
+	summarise(count=n())
+
+pj52 <- pj52 %>%
+	group_by(exerany2) %>%
+	mutate(perc=count/sum(count))
+
+ggplot(data=pj52, aes( x=genhlth, y=perc*100)) + geom_point() + facet_grid(. ~  exerany2)+ labs (x = "General Health" , y = "Percentage" , subtitle = "Did you exercise past 30 days ?")
+```
+This topic we have divided people in to 2 main parts first is people who has exercise past 30 days and people who did not.
+In subcategory we use gerneral health condidtion to seperate and test our second question.As you can see people who did exercise
+in past 30 days has better health condition significantly.(good,very good and excellent).
+more than 85% of peoples who did exercise past 30 days (280,749/325,027) has at least good health conditions.
+
+
+**Research quesion 3:**
+
+```{r}
+pj53 <- brfss2013_final %>%
+	group_by(drnkany5,genhlth) %>%
+	summarise(count=n())
+
+pj53 <- pj53 %>%
+	group_by(drnkany5) %>%
+	mutate(perc=count/sum(count))
+
+ggplot(data=pj53, aes( x=genhlth, y=perc*100)) + geom_point() + facet_grid(. ~  drnkany5) + labs (x = "General Health" , y = "Percentage" , subtitle = "Did you drink past 30 days ?")
+
+```
+This topic we have divided people in to 2 main parts first is people who has drink past 30 days and people who did not.
+In subcategory we use gerneral health condidtion to seperate and test our third question.As you can see people who did not
+drink in past 30 days has better health condition significantly.(good,very good and excellent).
+more than 87% of peoples who did not drink past 30 days (197,921/223,552) has at least good health conditions.
+
+Conclusion : All 3 explanatory variable as Sleep time , Drink Alcoholic past 30 days,Exercise past 30 days has effect to out response variable (general health conditions).
